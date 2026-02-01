@@ -6,9 +6,12 @@ import atmosphereVertex from "./shaders/atmosphere/vertex.glsl";
 import atmosphereFragment from "./shaders/atmosphere/fragment.glsl";
 
 import * as THREE from "three";
-import { ScrollTrigger } from "gsap/all";
+import ScrollTrigger from "gsap/dist/ScrollTrigger";
 
-const initPlanet = (): { scene: THREE.Scene } => {
+const initPlanet = (): {
+  scene: THREE.Scene;
+  renderer: THREE.WebGLRenderer;
+} => {
   const canvas = document.querySelector(
     "canvas.planet-3D",
   ) as HTMLCanvasElement;
@@ -136,9 +139,19 @@ const initPlanet = (): { scene: THREE.Scene } => {
         ease: "power1.inOut",
       },
       "setting",
-    );
+    )
 
-  // 42:27
+    .to(
+      camera.position,
+      {
+        y: 0.1,
+        z: window.innerWidth > 768 ? 19 : 30,
+        x: window.innerWidth > 768 ? 0 : 0.1,
+        duration: 2,
+        ease: "power1.inOut",
+      },
+      "setting",
+    );
 
   // animation loop
   gsap.ticker.add((time) => {
@@ -159,7 +172,7 @@ const initPlanet = (): { scene: THREE.Scene } => {
     renderer.setPixelRatio(size.pixelRation);
   });
 
-  return { scene };
+  return { scene, renderer };
 };
 
 export default initPlanet;

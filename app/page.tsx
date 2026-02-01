@@ -5,14 +5,24 @@ import initPlanet3D from "@/components/3D/planet";
 
 export default function Home() {
   useEffect(() => {
-    initPlanet3D();
+    const { scene, renderer } = initPlanet3D();
+
+    return () => {
+      if (renderer) {
+        const gl = renderer.getContext();
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        renderer.dispose();
+      }
+    };
   }, []);
 
   return (
     <div className="page">
       <section className="hero_main">
         <div className="content">
-          <h1>Welcome to the GA.IA</h1>
+          <h1>
+            Welcome to the <br /> New Gaia
+          </h1>
 
           <p>
             AI agents that bring value to businesses and elevate workers

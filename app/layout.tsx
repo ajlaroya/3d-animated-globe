@@ -57,7 +57,7 @@ const appleGaramond = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "3D Animated Globe Landing",
+  title: "New Gaia",
   description: "a beautiful 3D animated globe landing page",
 };
 
