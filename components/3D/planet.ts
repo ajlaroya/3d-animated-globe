@@ -2,8 +2,11 @@ import gsap from "gsap";
 
 import earthVertex from "./shaders/earth/vertex.glsl";
 import earthFragment from "./shaders/earth/fragment.glsl";
+import atmosphereVertex from "./shaders/atmosphere/vertex.glsl";
+import atmosphereFragment from "./shaders/atmosphere/fragment.glsl";
 
 import * as THREE from "three";
+import { ScrollTrigger } from "gsap/all";
 
 const initPlanet = (): { scene: THREE.Scene } => {
   const canvas = document.querySelector(
@@ -27,8 +30,8 @@ const initPlanet = (): { scene: THREE.Scene } => {
     1000,
   );
   camera.position.x = 0;
-  camera.position.y = 0.1;
-  camera.position.z = 19;
+  camera.position.y = 2.15;
+  camera.position.z = 4.5;
   scene.add(camera);
 
   // renderer
@@ -55,6 +58,10 @@ const initPlanet = (): { scene: THREE.Scene } => {
 
   // geometry
   const earthGeometry = new THREE.SphereGeometry(2, 64, 64);
+  const atmosphereGeometry = new THREE.SphereGeometry(2, 64, 64);
+
+  const atmosphereDayColor = "#4a96e8";
+  const atmosphereTwilightColor = "#1950E5";
 
   // material
   const earthMaterial = new THREE.ShaderMaterial({
@@ -65,11 +72,39 @@ const initPlanet = (): { scene: THREE.Scene } => {
       uNightTexture: new THREE.Uniform(nightTexture),
       uSpecularCloudsTexture: new THREE.Uniform(specularCloudsTexture),
       uSunDirection: new THREE.Uniform(new THREE.Vector3(-1, 0, 0)),
+      uAtmosphereDayColor: new THREE.Uniform(
+        new THREE.Color(atmosphereDayColor),
+      ),
+      uAtmosphereTwilightColor: new THREE.Uniform(
+        new THREE.Color(atmosphereTwilightColor),
+      ),
     },
     transparent: true,
   });
 
+  const atmosphereMaterial = new THREE.ShaderMaterial({
+    transparent: true,
+    side: THREE.BackSide,
+    vertexShader: atmosphereVertex,
+    fragmentShader: atmosphereFragment,
+    uniforms: {
+      uOpacity: { value: 1 },
+      uSunDirection: new THREE.Uniform(new THREE.Vector3(-1, 0, 0)),
+      uAtmosphereDayColor: new THREE.Uniform(
+        new THREE.Color(atmosphereDayColor),
+      ),
+      uAtmosphereTwilightColor: new THREE.Uniform(
+        new THREE.Color(atmosphereTwilightColor),
+      ),
+    },
+    depthWrite: false,
+  });
+
   const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+  const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+  atmosphere.scale.set(1.13, 1.13, 1.13);
+
+  const earthGroup = new THREE.Group().add(earth, atmosphere);
 
   let sunSpherical = new THREE.Spherical(1, Math.PI * 0.48, -1.8);
   const sunDirection = new THREE.Vector3();
@@ -78,7 +113,32 @@ const initPlanet = (): { scene: THREE.Scene } => {
 
   earthMaterial.uniforms.uSunDirection.value.copy(sunDirection);
 
-  scene.add(earth);
+  scene.add(earthGroup);
+  gsap.registerPlugin(ScrollTrigger);
+  gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: ".hero_main",
+        start: () => "top top",
+        scrub: 3,
+        anticipatePin: 1,
+        pin: true,
+      },
+    })
+
+    .to(
+      "hero_main .content",
+      {
+        filter: `blur(40px)`,
+        autoAlpha: 0,
+        scale: 0.5,
+        duration: 2,
+        ease: "power1.inOut",
+      },
+      "setting",
+    );
+
+  // 42:27
 
   // animation loop
   gsap.ticker.add((time) => {
